@@ -1,0 +1,6 @@
+{
+    "data_directory" :  "data",
+    "train_data": "train.csv",
+    "test_data": "test.csv",
+    "model_directory" : "model"
+}
