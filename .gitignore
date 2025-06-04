@@ -129,8 +129,4 @@ dmypy.json
 .pyre/
 
 # data
-sample_submission.csv
-test_data_clean.csv
-test.csv
-train_data_clean.csv
-train.csv
+*.csv
