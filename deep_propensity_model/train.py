@@ -61,16 +61,22 @@ args = parser.parse_args()
 
 # Extract values
 data_dir = args.data_dir
-batch_size = args.batch_size
-user_history_length = args.user_history_length
-user_embedding_size = args.user_embedding_size
-product_embedding_size = args.product_embedding_size
-hidden_size = args.hidden_size
-num_epochs = args.num_epochs
+batch_size = int(args.batch_size)
+user_history_length = int(args.user_history_length)
+user_embedding_size = int(args.user_embedding_size)
+product_embedding_size = int(args.product_embedding_size)
+hidden_size = int(args.hidden_size)
+num_epochs = int(args.num_epochs)
 
 # Step 1: Load the data
-ratings_df = pd.read_csv(f'{data_dir}/ratings.csv')
-movies_df = pd.read_csv(f'{data_dir}/movies.csv')
+ratings_df = pd.read_csv(f'{data_dir}/ml-20m/ml-20m/ratings.csv')
+movies_df = pd.read_csv(f'{data_dir}/ml-20m/ml-20m/movies.csv')
+
+# FOR TEST PURPOSES SAMPLE THE DATA USING USER ID
+user_id_sample = list(ratings_df['userId'].unique())[:1000]
+ratings_df = ratings_df[ratings_df['userId'].isin(user_id_sample)].reset_index(drop=True)
+movies_df = movies_df[movies_df['movieId'].isin(ratings_df['movieId'].unique())].reset_index(drop=True)
+# Map movieId to an index for easier processing
 movies_df['movie_idx'] = movies_df.index
 ratings_df = pd.merge(
     ratings_df,
@@ -96,7 +102,6 @@ ratings_df = ratings_df.sort_values(by=['user_idx', 'timestamp'])
 # Step 2: Create a user history using groupby and apply
 user_history = ratings_df.groupby('user_idx')['movie_idx'].apply(lambda x: x.values[-user_history_length:]).to_dict()
 
-# for testing
 ratings_df = ratings_df[ratings_df['user_idx'].isin(user_history.keys())].reset_index(drop=True)
 ratings_df['user_idx'] = ratings_df['user_idx'].astype(int)
 
@@ -131,7 +136,7 @@ full_dataset = MovieLensDataset(ratings_df, user_history, user_history_length=us
 train_dataset = MovieLensDataset(train_df, user_history, user_history_length=user_history_length)
 test_dataset = MovieLensDataset(test_df, user_history, user_history_length=user_history_length)
 
-full_dataloader = DataLoader(full_dataset, batch_size=batch_size, shuffle=True, num_workers=-1)
+full_dataloader = DataLoader(full_dataset, batch_size=batch_size, shuffle=True, num_workers=10)
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=3)
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=3)
 
